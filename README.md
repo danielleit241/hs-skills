@@ -1,7 +1,5 @@
 # HS Skills
 
-## Introduction
-
 HS Skills is a plugin toolkit for **Claude Code** and **Codex**. It provides reusable workflows and MCP configuration for the full development cycle: understanding a task, planning, implementation, testing, and review. The Claude Code plugin also includes specialist subagents and guard rails.
 
 ## Install
