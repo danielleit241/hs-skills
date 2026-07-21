@@ -1,0 +1,34 @@
+{
+  "name": "hs-skills",
+  "version": "1.0.0",
+  "description": "Reusable development skills and MCP integration for planning, research, implementation, testing, and code review.",
+  "author": {
+    "name": "Danielle"
+  },
+  "license": "ISC",
+  "keywords": [
+    "skills",
+    "development",
+    "workflow",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "HS Skills",
+    "shortDescription": "Development workflows with MCP support.",
+    "longDescription": "A reusable toolkit of development skills and MCP integration for planning, research, implementation, testing, and code review.",
+    "developerName": "Danielle",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Plan the implementation for this feature.",
+      "Review this code for correctness and risks.",
+      "Research the best approach for this task."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

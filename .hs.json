@@ -1,0 +1,38 @@
+{
+  "gemini": {
+    "model": "gemini-3-flash-preview"
+  },
+  "skills": {
+    "research": {
+      "useGemini": false
+    },
+    "scout": {
+      "external": {
+        "enabled": false,
+        "approvedProviders": []
+      }
+    }
+  },
+  "guardrails": {
+    "hooks": {
+      "privacy": true,
+      "scout": true
+    }
+  },
+  "artifacts": {
+    "plans": {
+      "directory": "plans",
+      "reportsDirectory": "plans/reports",
+      "archiveDirectory": "plans/archive"
+    },
+    "journals": {
+      "directory": "docs/journals"
+    },
+    "images": {
+      "directory": "assets"
+    },
+    "repomix": {
+      "directory": "artifacts/repomix"
+    }
+  }
+}

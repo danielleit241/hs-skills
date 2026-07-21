@@ -1,0 +1,23 @@
+{
+  "name": "hs-skills",
+  "owner": {
+    "name": "Danielle"
+  },
+  "description": "Reusable development workflows, specialist agents, and guard rails for Claude Code.",
+  "plugins": [
+    {
+      "name": "hs-skills",
+      "source": "./",
+      "displayName": "HS Skills",
+      "description": "Reusable development workflows, specialist agents, and guard rails for Claude Code.",
+      "category": "productivity",
+      "tags": [
+        "skills",
+        "agents",
+        "development",
+        "workflow",
+        "mcp"
+      ]
+    }
+  ]
+}

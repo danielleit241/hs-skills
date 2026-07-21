@@ -1,0 +1,20 @@
+{
+  "name": "hs-skills",
+  "interface": {
+    "displayName": "HS Skills"
+  },
+  "plugins": [
+    {
+      "name": "hs-skills",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
