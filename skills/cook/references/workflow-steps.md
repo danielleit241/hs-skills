@@ -78,6 +78,9 @@ All modes share core steps with mode-specific variations.
 **All modes:**
 
 - When progress tracking is available, mark work in progress; never use tracking as completion evidence.
+- Before modifying code, read the active Technical Design or plan and identify decisions it leaves unspecified. Use the active plan directory, including when the supplied plan is a phase file.
+- Record only material deviations from the approved plan or Technical Design, including assumptions, trade-offs, architecture changes, workarounds, and maintainer-relevant consequences. Prefer the active plan or an existing decision record; do not create a new artifact solely for this purpose.
+- Keep the codebase clean, structurally consistent, and maintainable. Add comments only for **WHY** (intent, rationale, or trade-offs), never to restate **WHAT** clear code expresses.
 - Execute phase tasks sequentially (Step 3.1, 3.2, etc.)
 - Use `ui-ux-designer` for frontend
 - For image assets, use the project's approved image-generation workflow when one is available; otherwise request a user-provided asset.
@@ -103,12 +106,16 @@ All modes share core steps with mode-specific variations.
 
 **All modes (except no-test):**
 
-- Write tests: happy path, edge cases, errors
+- Before writing tests, confirm the relevant requirement, acceptance criteria, and design decisions. Ask for clarification when they are ambiguous; do not let an early test lock in an unvalidated design.
+- Use TDD when it helps discover the behavior: write one focused failing test, implement the smallest behavior that satisfies it, then refactor. Do not treat this cycle as a requirement to test every change or as evidence the design is correct.
+- Test observable business behavior and public APIs first: critical flows, happy paths, edge cases, errors, and regressions. Avoid coupling tests to private implementation details unless that detail is itself a contractual boundary.
+- Treat every test as a hypothesis. When it fails, compare the assertion with the specification and business intent before changing either the production code or the test.
+- Treat passing tests as evidence, not proof. Supplement them with the appropriate checks for the change, such as review of requirements, type checks, integration checks, manual verification, or production-like validation.
 - When testing is applicable, MUST delegate the scoped test suite to the tester specialist when delegation is available. Otherwise run the same scoped suite sequentially and retain its evidence.
 - If failures, hand off evidence to `debugger` only when a fix is authorized.
-- **Forbidden:** fake mocks, commented tests, changed assertions, skipping subagent delegation
+- **Forbidden:** fake mocks, commented-out tests, changing assertions merely to make them pass, or skipping required delegation.
 
-**Output:** `✓ Step 4: Tests [X/X passed] - tester subagent invoked`
+**Output:** `✓ Step 4: Test evidence - [scopes run, results, requirement/design checks, and any justified exceptions]`
 
 ### [Review Gate 4] Post-Testing (skip if auto mode)
 
@@ -122,6 +129,8 @@ All modes share core steps with mode-specific variations.
 
 - MUST delegate code review to the code-reviewer specialist when delegation is available. Otherwise perform the same evidence-backed review sequentially.
 - **DO NOT** review code yourself - delegate to subagent
+- Verify that material deviations from the approved plan or Technical Design are documented where maintainers can find them.
+- Verify the implementation remains clean, consistent, and maintainable; flag unnecessary duplication and recommend reuse when it improves clarity without over-abstraction. Also flag comments that restate code instead of documenting intent, rationale, or trade-offs.
 
 **Interactive/Parallel/Code/No-test:**
 

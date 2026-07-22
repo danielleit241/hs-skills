@@ -4,7 +4,7 @@ description: "ALWAYS activate this skill before implementing EVERY feature, plan
 argument-hint: "[task|plan-path] [--interactive|--fast|--parallel|--auto|--no-test]"
 metadata:
   author: hs-skills
-  version: "2.1.1"
+  version: "2.1.2"
 ---
 
 # Cook - Smart Feature Implementation
@@ -56,14 +56,14 @@ User override: If user explicitly says "just code it" or "skip planning", respec
 
 ## Smart Intent Detection
 
-| Input Pattern                     | Detected Mode | Behavior                       |
-| --------------------------------- | ------------- | ------------------------------ |
-| Path to `plan.md` or `phase-*.md` | code          | Execute existing plan          |
-| Contains "fast", "quick"          | fast          | Skip research, scout→plan→code |
-| Explicit `--auto` flag              | auto          | Continue implementation gates only |
-| Lists 3+ features OR "parallel"   | parallel      | Multi-agent execution          |
-| Contains "no test", "skip test"   | no-test       | Skip testing step              |
-| Default                           | interactive   | Full workflow with user input  |
+| Input Pattern                     | Detected Mode | Behavior                           |
+| --------------------------------- | ------------- | ---------------------------------- |
+| Path to `plan.md` or `phase-*.md` | code          | Execute existing plan              |
+| Contains "fast", "quick"          | fast          | Skip research, scout→plan→code     |
+| Explicit `--auto` flag            | auto          | Continue implementation gates only |
+| Lists 3+ features OR "parallel"   | parallel      | Multi-agent execution              |
+| Contains "no test", "skip test"   | no-test       | Skip testing step                  |
+| Default                           | interactive   | Full workflow with user input      |
 
 See `references/intent-detection.md` for detection logic.
 
@@ -99,7 +99,7 @@ flowchart TD
 
 **Default (non-auto):** Stops at `[Review]` gates for human approval before each major step.
 **Auto mode (`--auto`):** Continues implementation and review gates across phases. Authority-changing actions remain separately opt-in.
-    At each required gate, ask the user and do not continue without the required answer. Delegate bounded specialist work when available; progress tracking is optional and never determines correctness or completion.
+At each required gate, ask the user and do not continue without the required answer. Delegate bounded specialist work when available; progress tracking is optional and never determines correctness or completion.
 
 | Mode        | Research | Testing | Review Gates                   | Phase Progression      |
 | ----------- | -------- | ------- | ------------------------------ | ---------------------- |
@@ -123,11 +123,11 @@ Human review required at these checkpoints (skipped with `--auto`):
 - **Post-Research:** Review findings before planning
 - **Post-Plan:** Approve plan before implementation
 - **Post-Implementation:** Approve code before testing
-- **Post-Testing:** 100% pass + approve before finalize
+- **Post-Testing:** Review test evidence against the approved requirements and design before finalizing
 
 **Always enforced (all modes):**
 
-- **Testing:** 100% pass required (unless no-test mode)
+- **Testing:** Use results as a feedback loop, not proof of correctness. Resolve unexpected failures, explain intentional exceptions, and verify relevant behavior against the approved requirements and design (unless no-test mode).
 - **Code Review:** User approval OR auto-approve (score≥9.5, 0 critical)
 - **Finalize (MANDATORY - never skip):**
   1. `project-manager` subagent → run full plan sync-back (all completed tasks/steps across all `phase-XX-*.md`, not only current phase), then update `plan.md` status/progress
@@ -138,14 +138,14 @@ Human review required at these checkpoints (skipped with `--auto`):
 
 ## Required Subagents (MANDATORY)
 
-| Phase    | Subagent                                         | Requirement           |
-| -------- | ------------------------------------------------ | --------------------- |
-| Research | `researcher`                                     | Optional in fast/code |
-| Scout    | `hs:scout`                                       | Optional in code      |
-| Plan     | `planner`                                        | Optional in code      |
-| UI Work  | `ui-ux-designer`                                 | If frontend work      |
-| Testing  | `tester`, `debugger`                             | **MUST** delegate when available; otherwise perform the same scope sequentially |
-| Review   | `code-reviewer`                                  | **MUST** delegate when available; otherwise perform the same scope sequentially |
+| Phase    | Subagent                          | Requirement                                                                                                                   |
+| -------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Research | `researcher`                      | Optional in fast/code                                                                                                         |
+| Scout    | `hs:scout`                        | Optional in code                                                                                                              |
+| Plan     | `planner`                         | Optional in code                                                                                                              |
+| UI Work  | `ui-ux-designer`                  | If frontend work                                                                                                              |
+| Testing  | `tester`, `debugger`              | **MUST** delegate when available; otherwise perform the same scope sequentially                                               |
+| Review   | `code-reviewer`                   | **MUST** delegate when available; otherwise perform the same scope sequentially                                               |
 | Finalize | `project-manager`, `docs-manager` | **MUST** run applicable sync and documentation handoff; `git-manager` is optional and requires explicit commit authorization. |
 
 **CRITICAL ENFORCEMENT:**
@@ -156,6 +156,6 @@ Human review required at these checkpoints (skipped with `--auto`):
 ## References
 
 - `references/intent-detection.md` - Detection rules and routing logic
-- `references/workflow-steps.md` - Detailed step definitions for all modes
+- `references/workflow-steps.md` - Detailed step definitions, decision-recording, and code-quality guidance
 - `references/review-cycle.md` - Interactive and auto review processes
 - `references/subagent-patterns.md` - Subagent invocation patterns
