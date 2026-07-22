@@ -12,6 +12,14 @@ const testsDirectory = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(testsDirectory, '..', '..');
 const hooksDirectory = path.join(root, 'hooks');
 
+function collectMarkdownFiles(directory) {
+    return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+        const entryPath = path.join(directory, entry.name);
+        if (entry.isDirectory()) return collectMarkdownFiles(entryPath);
+        return entry.isFile() && entry.name.endsWith('.md') ? [entryPath] : [];
+    });
+}
+
 test('privacy blocks secret paths before a tool runs', () => {
     const result = evaluateGuardrails({ tool_name: 'Read', tool_input: { path: '.env.local' } }, enabled);
     assert.equal(result.hook, 'privacy');
@@ -67,5 +75,13 @@ test('target implementation skills contain one hard gate', () => {
     for (const skill of ['backend-development', 'frontend-design', 'ui-styling', 'databases']) {
         const content = fs.readFileSync(path.join(root, 'skills', skill, 'SKILL.md'), 'utf8');
         assert.equal((content.match(/<HARD-GATE>/g) ?? []).length, 1, `${skill} must contain exactly one hard gate`);
+    }
+});
+
+test('skill workflows remain self-contained and runtime-neutral', () => {
+    const forbidden = /\b(?:ASK_USER|SPAWN_AGENT|TRACK_TASK|TaskCreate|TaskUpdate|TaskGet|TaskList|TodoWrite|AskUserQuestion)\b|runtime-actions\.md/;
+    for (const file of collectMarkdownFiles(path.join(root, 'skills'))) {
+        const content = fs.readFileSync(file, 'utf8');
+        assert.doesNotMatch(content, forbidden, `${path.relative(root, file)} must not use shared runtime action identifiers`);
     }
 });

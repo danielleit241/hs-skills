@@ -34,7 +34,7 @@ Mark recommended option with "(Recommended)" suffix.
 
 ### Step 4: Interview User
 
-Use `ASK_USER` from `../../cook/references/runtime-actions.md`.
+Ask the user for the required decision and do not continue until they answer.
 
 - Use question count from `## Plan Context` validation settings
 - Group related questions (max 4 per tool call)

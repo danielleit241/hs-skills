@@ -13,7 +13,7 @@ Adversarial code review with technical rigor, evidence-based claims, and verific
 
 ## Input Modes
 
-Auto-detect from arguments. If ambiguous or no arguments, `ASK_USER` as defined in `../cook/references/runtime-actions.md`.
+Auto-detect from arguments. If ambiguous or no arguments, MUST ask the user to select a review target and do not begin review until the target is clear.
 
 | Input                       | Mode          | What Gets Reviewed                       |
 | --------------------------- | ------------- | ---------------------------------------- |
@@ -28,7 +28,7 @@ Auto-detect from arguments. If ambiguous or no arguments, `ASK_USER` as defined 
 
 ### No Arguments
 
-If invoked WITHOUT arguments and no recent changes in context, `ASK_USER`: “What would you like to review?”
+If invoked WITHOUT arguments and no recent changes in context, MUST ask: “What would you like to review?” Do not infer a target.
 
 | Option                  | Description                     |
 | ----------------------- | ------------------------------- |
@@ -143,18 +143,15 @@ No performative agreement. Verify before recommending a change. Push back if wro
 
 **When:** Multi-file features (3+ changed files) or parallel code-reviewer scopes.
 
-Use `SPAWN_AGENT` and optional `TRACK_TASK` from `../cook/references/runtime-actions.md`; concrete platform tools are adapter details.
+When delegation is available, delegate each bounded review stage to the appropriate specialist. Otherwise run the same stages sequentially. Progress tracking is optional and never completion evidence.
 
 **Pipeline:** scout → review → adversarial → verify. It produces findings and evidence only.
 
 ```
-TRACK_TASK: “Scout edge cases”       → pending
-TRACK_TASK: “Review implementation”  → pending, depends on scout
-TRACK_TASK: “Adversarial review”     → pending, depends on review
-TRACK_TASK: “Verify evidence”        → pending, depends on adversarial
+Scout edge cases → Review implementation → Adversarial review → Verify evidence
 ```
 
-**Parallel reviews:** `SPAWN_AGENT(code-reviewer, scope)` for independent file groups. Aggregate findings before reporting.
+**Parallel reviews:** When delegation is available, assign independent file groups to code-reviewer specialists. Otherwise review groups sequentially. Aggregate findings before reporting.
 
 **Re-review cycles:** A later, explicitly authorized fix may be followed by a fresh review. The review skill does not create a fix task itself.
 

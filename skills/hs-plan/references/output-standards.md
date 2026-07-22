@@ -54,7 +54,7 @@ Use these predefined tags for consistency:
 
 **description**: 1-2 sentences, concrete deliverables, reference phase file
 
-See `task-management.md` for full TaskCreate patterns and metadata.
+See `task-management.md` for optional progress-tracking guidance and metadata.
 
 ## Task Breakdown
 
@@ -102,7 +102,7 @@ List affected files with:
 - Prioritize actionable info
 
 ### Unresolved Questions
-**IMPORTANT:** Use `ASK_USER` from `../../cook/references/runtime-actions.md` for unresolved questions at the end.
+**IMPORTANT:** Ask the user about unresolved questions at the end; do not silently choose a material answer.
 - Questions needing clarification
 - Technical decisions requiring input
 - Unknowns impacting implementation

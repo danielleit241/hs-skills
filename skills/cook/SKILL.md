@@ -99,7 +99,7 @@ flowchart TD
 
 **Default (non-auto):** Stops at `[Review]` gates for human approval before each major step.
 **Auto mode (`--auto`):** Continues implementation and review gates across phases. Authority-changing actions remain separately opt-in.
-Use the runtime-neutral actions in `references/runtime-actions.md`. Progress tracking is optional and must never determine whether implementation is correct or complete.
+    At each required gate, ask the user and do not continue without the required answer. Delegate bounded specialist work when available; progress tracking is optional and never determines correctness or completion.
 
 | Mode        | Research | Testing | Review Gates                   | Phase Progression      |
 | ----------- | -------- | ------- | ------------------------------ | ---------------------- |
@@ -132,7 +132,7 @@ Human review required at these checkpoints (skipped with `--auto`):
 - **Finalize (MANDATORY - never skip):**
   1. `project-manager` subagent → run full plan sync-back (all completed tasks/steps across all `phase-XX-*.md`, not only current phase), then update `plan.md` status/progress
   2. `docs-manager` subagent → update `./docs` if changes warrant
-  3. `TRACK_TASK(complete)` after sync-back verification, when tracking is available
+  3. When the current runtime supports progress tracking, mark work complete only after sync-back verification. Tracking is never completion evidence.
   4. Offer a focused commit only when the user explicitly requests one in the current conversation.
   5. Run `/hs:journal` to write a concise technical journal entry upon completion
 
@@ -144,16 +144,14 @@ Human review required at these checkpoints (skipped with `--auto`):
 | Scout    | `hs:scout`                                       | Optional in code      |
 | Plan     | `planner`                                        | Optional in code      |
 | UI Work  | `ui-ux-designer`                                 | If frontend work      |
-| Testing  | `tester`, `debugger`                             | **MUST** spawn        |
-| Review   | `code-reviewer`                                  | **MUST** spawn        |
+| Testing  | `tester`, `debugger`                             | **MUST** delegate when available; otherwise perform the same scope sequentially |
+| Review   | `code-reviewer`                                  | **MUST** delegate when available; otherwise perform the same scope sequentially |
 | Finalize | `project-manager`, `docs-manager` | **MUST** run applicable sync and documentation handoff; `git-manager` is optional and requires explicit commit authorization. |
 
 **CRITICAL ENFORCEMENT:**
 
-- Steps 4, 5, 6 **MUST** use Task tool to spawn subagents
-- DO NOT implement testing, review, or finalization yourself - DELEGATE
-- If workflow ends with 0 Task tool calls, it is INCOMPLETE
-- Use `SPAWN_AGENT(role, scope)` as defined in `references/runtime-actions.md`; platform adapters select the concrete facility.
+- Steps 4, 5, 6 **MUST** delegate bounded specialist work when delegation is available; otherwise perform the same bounded work sequentially and report the fallback.
+- Use the available delegation facility for bounded specialist work. If delegation is unavailable, perform the same scoped work sequentially and record that fallback.
 
 ## References
 

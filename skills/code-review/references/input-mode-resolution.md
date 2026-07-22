@@ -19,7 +19,7 @@ Parse arguments left-to-right. First match wins.
 | `--pending` | Pending | explicit flag |
 | `codebase` | Codebase | existing mode |
 | *(none + context)* | Default | recent changes |
-| *(none + no context)* | Prompt | ask user via `ASK_USER` |
+| *(none + no context)* | Prompt | ask the user; do not infer a target |
 
 ## Resolution Commands
 
@@ -98,12 +98,12 @@ Use recent changes already in conversation context. If no changes apparent, fall
 
 ### Prompt Mode
 
-When no arguments and no recent context, use `ASK_USER` from `../../cook/references/runtime-actions.md`:
+When no arguments and no recent context, MUST ask the user:
 - Header: "Review Target"
 - Question: "What would you like to review?"
 - Options: Pending changes, Enter PR number, Enter commit hash, Full codebase scan, Parallel codebase audit
 
-For PR/commit options, use a follow-up `ASK_USER` prompt to get the number/hash.
+For PR/commit options, ask a follow-up question to get the number/hash.
 
 ### Codebase Mode
 

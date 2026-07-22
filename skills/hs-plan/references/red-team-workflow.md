@@ -50,19 +50,19 @@ For each finding, evaluate and propose: **Accept** or **Reject**.
 
 ### Step 7: User Review
 
-Present via `ASK_USER` from `../../cook/references/runtime-actions.md`:
+Present the findings and ask the user to decide:
 
 - "Looks good, apply accepted findings"
 - "Let me review each one"
 - "Reject all, plan is fine"
 
 **If "Let me review each one":**
-For each finding marked Accept, use `ASK_USER`:
+For each finding marked Accept, ask the user:
 
 - Options: "Yes, apply" | "No, reject" | "Modify suggestion"
 
 **If "Modify suggestion":**
-`ASK_USER`: “Describe your modification to this finding's suggested fix:”
+Ask: “Describe your modification to this finding's suggested fix:”
 (user provides free text via "Other" option)
 Record the modified suggestion. Set disposition to "Accept (modified)" in the Red Team Review table.
 

@@ -33,7 +33,7 @@ Before planning, answer these concisely:
 
 ## Scope Modes
 
-After answering the 3 questions, present via `ASK_USER` from `../../cook/references/runtime-actions.md`:
+After answering the 3 questions, present the options and ask the user to decide:
 
 **Header:** "Scope Challenge"
 **Question:** "Based on analysis, how should we scope this plan?"

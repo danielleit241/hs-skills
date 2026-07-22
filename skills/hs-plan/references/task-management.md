@@ -1,8 +1,8 @@
 # Plan Progress Tracking
 
 Plan files (`plan.md` and phase Markdown files) are the persistent source of
-truth. Use `TRACK_TASK` from `../../cook/references/runtime-actions.md` only as
-optional, session-local operational metadata.
+truth. Use runtime progress tracking only as optional, session-local operational
+metadata; it is never completion evidence.
 
 ## Hydration
 

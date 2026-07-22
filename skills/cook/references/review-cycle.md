@@ -24,7 +24,7 @@ LOOP:
      │  - [suggestion]                         │
      └─────────────────────────────────────────┘
 
-  3. `ASK_USER` (Review & Approve):
+  3. MUST ask the user to review and approve:
      IF critical_count > 0:
        - "Fix critical issues" → fix, re-run tester, cycle++, LOOP
        - "Fix all issues" → fix all, re-run tester, cycle++, LOOP
@@ -37,7 +37,7 @@ LOOP:
 
   4. IF cycle >= 3 AND user selects fix:
      → "⚠ 3 review cycles completed. Final decision required."
-     → `ASK_USER`: “Approve with noted issues” / “Abort workflow”
+     → Ask: “Approve with noted issues” / “Abort workflow”. Do not proceed without a response.
 ```
 
 ## Auto-Handling Cycle (for auto modes)

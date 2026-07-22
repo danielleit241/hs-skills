@@ -75,10 +75,10 @@ If not installed, ask user:
 
 ## Runtime Adapter
 
-Use `SPAWN_AGENT` from `../../cook/references/runtime-actions.md` to run bounded external commands only after consent:
+After the consent gate passes, delegate bounded external commands when delegation is available. Otherwise run only the same approved, bounded command sequentially:
 
 ```
-SPAWN_AGENT(external-scout, "Run a consented Gemini query limited to [approved paths]")
+Delegate a consented Gemini query limited to `[approved paths]`.
 ```
 
 Do not fan out beyond the consented directories/files.
@@ -97,9 +97,9 @@ User: "Find database migration files"
 After the consent gate passes, run bounded external scopes through the platform adapter:
 
 ```
-SPAWN_AGENT(external-scout, "Search approved db/ and migrations/ paths for migration files")
-SPAWN_AGENT(external-scout, "Search approved lib/ and src/ paths for database schema files")
-SPAWN_AGENT(external-scout, "Search approved config/ paths for database configuration")
+Delegate a search of approved `db/` and `migrations/` paths for migration files.
+Delegate a search of approved `lib/` and `src/` paths for database schema files.
+Delegate a search of approved `config/` paths for database configuration.
 ```
 
 ## Reading File Content
@@ -129,13 +129,13 @@ lines_per_chunk = ceil(total_lines / chunks)
 **Small files (<500 lines each):**
 
 ```
-SPAWN_AGENT(scout, "Read the approved small files and report relevant context")
+Delegate reading of the approved small files and require a relevant-context report.
 ```
 
 **Large file (>500 lines) - use sed for ranges:**
 
 ```
-SPAWN_AGENT(scout, "Read the approved line range and report relevant context")
+Delegate reading of the approved line range and require a relevant-context report.
 ```
 
 ### Chunking Decision Tree

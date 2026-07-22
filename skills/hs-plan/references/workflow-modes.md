@@ -11,7 +11,7 @@ When no flag specified, analyze task and pick mode:
 | 3+ independent features/layers/modules    | parallel | Enable concurrent agents |
 | Ambiguous approach, multiple valid paths  | two      | Compare alternatives     |
 
-Use `ASK_USER` from `../../cook/references/runtime-actions.md` if detection is uncertain.
+If detection is uncertain, ask the user to select the mode; do not infer it.
 
 ## Scope Challenge Integration
 
@@ -94,7 +94,7 @@ Research → Scout → Plan 2 approaches → Compare → Hydrate Tasks.
 | parallel | Phase + steps + ownership   | Parallel groups + sequential deps |
 | two      | After user selects approach | Sequential chain                  |
 
-All modes: See `task-management.md` for TaskCreate patterns and metadata.
+All modes: See `task-management.md` for optional progress-tracking guidance and metadata.
 
 ## Post-Plan Red Team Review
 

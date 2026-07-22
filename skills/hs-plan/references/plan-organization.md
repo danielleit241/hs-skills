@@ -33,7 +33,7 @@ IN CURRENT WORKING PROJECT DIRECTORY:
 ### Task Hydration
 
 After creating plan.md and phase files, hydrate tasks (unless `--no-tasks`):
-1. TaskCreate per phase with `addBlockedBy` dependency chain
+1. When progress tracking is available, record each phase with its dependency chain.
 2. Add critical step tasks for high-risk items
 3. See `task-management.md` for patterns and cook handoff protocol
 

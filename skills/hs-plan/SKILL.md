@@ -12,7 +12,7 @@ metadata:
 
 Create detailed technical implementation plans through research, codebase analysis, solution design, and comprehensive documentation.
 
-**IMPORTANT:** Before you start, read root `.hs.json` → `artifacts.plans.directory`, then scan unfinished plans there and read `plan.md`. If there are relevant plans with your upcoming plan, update them as well. If clarification is needed, use `ASK_USER` from `../cook/references/runtime-actions.md`.
+**IMPORTANT:** Before you start, read root `.hs.json` → `artifacts.plans.directory`, then scan unfinished plans there and read `plan.md`. If there are relevant plans with your upcoming plan, update them as well. If clarification is needed, ask the user before planning.
 
 ### Cross-Plan Dependency Detection
 
@@ -25,7 +25,7 @@ During the pre-creation scan, detect and mark blocking relationships between pla
    - New plan changes something existing plan depends on → existing plan `blockedBy: [new-plan-dir]`, new plan `blocks: [existing-plan-dir]`
    - Mutual dependency → both plans reference each other in `blockedBy`/`blocks`
 4. **Bidirectional update** — When relationship detected, update BOTH `plan.md` files' frontmatter
-5. **Ambiguous?** → `ASK_USER`: present detected overlap and ask for the relationship type (blocks/blockedBy/none).
+5. **Ambiguous?** → Present the detected overlap and MUST ask the user for the relationship type (blocks/blockedBy/none) before continuing.
 
 **Frontmatter fields** (relative plan dir paths):
 
@@ -38,7 +38,7 @@ blocks: [260228-0900-user-dashboard] # This plan blocks these plans
 
 ## Default (No Arguments)
 
-If invoked with a task description, proceed with planning workflow. If invoked WITHOUT arguments or with unclear intent, use `ASK_USER` to present available operations:
+If invoked with a task description, proceed with planning workflow. If invoked WITHOUT arguments or with unclear intent, MUST ask the user to select an available operation:
 
 | Operation   | Description                           |
 | ----------- | ------------------------------------- |
@@ -47,7 +47,7 @@ If invoked with a task description, proceed with planning workflow. If invoked W
 | `red-team`  | Adversarial plan review               |
 | `validate`  | Critical questions interview          |
 
-Present via `ASK_USER`: “What would you like to do?”.
+Ask: “What would you like to do?”. Do not infer an operation.
 
 ## Workflow Modes
 
@@ -162,15 +162,15 @@ Plan files = persistent. Tasks = session-scoped. Hydration bridges the gap.
 
 **Default:** Auto-hydrate tasks after plan files are written. Skip with `--no-tasks`.
 **3-Task Rule:** <3 phases → skip task creation.
-Use optional `TRACK_TASK` from `../cook/references/runtime-actions.md` for progress. Plan files remain the source of truth; tracking is an optimization, not a requirement.
+Record progress when the runtime supports it. Plan files remain the source of truth; tracking is an optimization, not a requirement or completion criterion.
 
 Load: `references/task-management.md` for runtime-neutral hydration and cook handoff protocol.
 
 ### Hydration Workflow
 
 1. Write plan.md + phase files (persistent layer)
-2. Optionally `TRACK_TASK` per phase with dependency metadata.
-3. Optionally track critical/high-risk steps within phases.
+2. When supported, record each phase and its dependency metadata.
+3. When supported, record critical/high-risk steps within phases.
 4. Metadata: phase, priority, effort, planDir, phaseFile
 5. Cook reads plan files directly and may rehydrate optional tracking in a new session.
 

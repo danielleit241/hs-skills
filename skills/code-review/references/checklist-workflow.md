@@ -85,7 +85,7 @@ Pre-Landing Review: N issues (X critical, Y informational)
 
 ### 7. Critical Issue Resolution
 
-For each critical issue, use `ASK_USER` from `../../cook/references/runtime-actions.md`:
+For each critical issue, MUST ask the user which remediation handoff they want before modifying any files:
 
 - Problem with `file:line`
 - Recommended fix

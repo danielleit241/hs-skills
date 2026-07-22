@@ -2,14 +2,14 @@
 
 All modes share core steps with mode-specific variations.
 
-**Runtime actions:** Use `ASK_USER`, `SPAWN_AGENT`, and `TRACK_TASK` from `runtime-actions.md`. Progress tracking is optional; every step remains functional without a task API.
+**Runtime behavior:** Ask the user at required approval gates, delegate bounded specialist work when available, and track progress only when supported. Progress tracking is optional; every step remains functional without it.
 
 ## Step 0: Intent Detection & Setup
 
 1. Parse input with `intent-detection.md` rules
 2. Log detected mode: `✓ Step 0: Mode [X] - [reason]`
 3. If mode=code: detect plan path, set active plan
-4. Optionally `TRACK_TASK` workflow steps and dependencies when supported.
+4. Optionally record workflow steps and dependencies when the current runtime supports progress tracking.
 
 **Output:** `✓ Step 0: Mode [interactive|auto|fast|parallel|no-test|code] - [detection reason]`
 
@@ -30,7 +30,7 @@ All modes share core steps with mode-specific variations.
 ### [Review Gate 1] Post-Research (skip if auto mode)
 
 - Present research summary to user
-- `ASK_USER`: “Proceed to planning?”, “Request more research”, or “Abort”.
+- MUST ask the user: “Proceed to planning?”, “Request more research”, or “Abort”. Do not continue without a response.
 - **Auto mode:** Skip this gate
 
 ## Step 2: Planning
@@ -59,7 +59,7 @@ All modes share core steps with mode-specific variations.
 ### [Review Gate 2] Post-Plan (skip if auto mode)
 
 - Present plan overview with phases
-- `ASK_USER`: “Validate the plan or approve plan to start implementation?” — Validate / Approve / Abort / Request revisions.
+- MUST ask the user: “Validate the plan or approve plan to start implementation?” — Validate / Approve / Abort / Request revisions. Do not begin implementation without approval.
   - "Validate": run `/hs:plan validate` skill invocation
   - "Approve": continue to implementation
   - "Abort": stop the workflow
@@ -72,12 +72,12 @@ All modes share core steps with mode-specific variations.
 
 1. If runtime tracking exists, inspect existing tracked work hydrated by planning.
 2. Otherwise read plan phases directly; plan files remain the source of truth.
-3. Optionally `TRACK_TASK` unchecked items with priority and phase metadata.
+3. Optionally record unchecked items with priority and phase metadata when progress tracking is available.
 4. Model dependencies explicitly in the plan; tracking dependencies are optional.
 
 **All modes:**
 
-- Use `TRACK_TASK(in_progress)` when available.
+- When progress tracking is available, mark work in progress; never use tracking as completion evidence.
 - Execute phase tasks sequentially (Step 3.1, 3.2, etc.)
 - Use `ui-ux-designer` for frontend
 - For image assets, use the project's approved image-generation workflow when one is available; otherwise request a user-provided asset.
@@ -85,9 +85,9 @@ All modes share core steps with mode-specific variations.
 
 **Parallel mode:**
 
-- Use the runtime-neutral actions from `runtime-actions.md`.
+- Delegate bounded parallel work when delegation is available; otherwise run the same work sequentially and report the fallback.
 - Launch multiple `fullstack-developer` agents
-- When agents pick up work, optionally record it with `TRACK_TASK(in_progress)`.
+- When delegated agents pick up work, optionally record progress when the runtime supports it.
 - Respect file ownership boundaries
 - Wait for parallel group before next
 
@@ -96,7 +96,7 @@ All modes share core steps with mode-specific variations.
 ### [Review Gate 3] Post-Implementation (skip if auto mode)
 
 - Present implementation summary (files changed, key changes)
-- `ASK_USER`: “Proceed to testing?”, “Request implementation changes”, or “Abort”.
+- MUST ask the user: “Proceed to testing?”, “Request implementation changes”, or “Abort”. Do not continue without a response.
 - **Auto mode:** Skip this gate
 
 ## Step 4: Testing (skip if no-test mode)
@@ -104,7 +104,7 @@ All modes share core steps with mode-specific variations.
 **All modes (except no-test):**
 
 - Write tests: happy path, edge cases, errors
-- `SPAWN_AGENT(tester, "Run the scoped test suite and return evidence")` when testing is applicable.
+- When testing is applicable, MUST delegate the scoped test suite to the tester specialist when delegation is available. Otherwise run the same scoped suite sequentially and retain its evidence.
 - If failures, hand off evidence to `debugger` only when a fix is authorized.
 - **Forbidden:** fake mocks, commented tests, changed assertions, skipping subagent delegation
 
@@ -113,14 +113,14 @@ All modes share core steps with mode-specific variations.
 ### [Review Gate 4] Post-Testing (skip if auto mode)
 
 - Present test results summary
-- `ASK_USER`: “Proceed to code review?”, “Request test fixes”, or “Abort”.
+- MUST ask the user: “Proceed to code review?”, “Request test fixes”, or “Abort”. Do not continue without a response.
 - **Auto mode:** Skip this gate
 
 ## Step 5: Code Review
 
 **All modes - MANDATORY subagent:**
 
-- `SPAWN_AGENT(code-reviewer, "Review changes and return evidence-backed findings")`.
+- MUST delegate code review to the code-reviewer specialist when delegation is available. Otherwise perform the same evidence-backed review sequentially.
 - **DO NOT** review code yourself - delegate to subagent
 
 **Interactive/Parallel/Code/No-test:**
@@ -145,8 +145,8 @@ All modes share core steps with mode-specific variations.
 **All modes — required finalization handoffs:**
 
 1. Run applicable handoffs in parallel:
-   - `SPAWN_AGENT(project-manager, "Synchronize verified plan status for [plan-path] across phase files and plan metadata")`
-   - `SPAWN_AGENT(docs-manager, "Update documentation affected by the verified changes")`
+   - MUST delegate verified plan-status synchronization for `[plan-path]` to the project-manager specialist when available; otherwise perform the same synchronization sequentially.
+   - MUST delegate documentation updates affected by verified changes to the docs-manager specialist when available; otherwise perform them sequentially.
 2. Project-manager sync-back MUST include:
 
 ### Status Sync (Finalize)
@@ -172,7 +172,7 @@ only change the Status column cell, preserve table structure.
 - Update `plan.md` status/progress (`pending`/`in-progress`/`completed`) from actual checkbox state.
 - Return unresolved mappings if any completed task cannot be matched to a phase file.
 
-3. Use `TRACK_TASK(complete)` after sync-back confirmation when tracking is available.
+3. After sync-back confirmation, optionally record completion when progress tracking is available. The verification evidence remains authoritative.
 4. Onboarding check (API keys, env vars)
 5. Do not stage, commit, or push by default. Invoke `git-manager` only after explicit user authorization for a focused commit in the current conversation.
 
@@ -201,10 +201,10 @@ code:        0 → skip → skip → 3 → [R] → 4 → [R] → 5(user) → 6
 ## Critical Rules
 
 - Never skip steps without mode justification
-- **MANDATORY HANDOFF INTENT:** Use `SPAWN_AGENT` for applicable specialist work. Concrete tool selection belongs to the platform adapter.
+- **MANDATORY HANDOFF INTENT:** Delegate applicable specialist work when delegation is available; otherwise perform the same bounded work sequentially and report that fallback.
   - Step 4: `tester` (and `debugger` if failures)
   - Step 5: `code-reviewer`
   - Step 6: `project-manager`, `docs-manager`; `git-manager` only with explicit authorization.
-- Use `TRACK_TASK` only as optional operational metadata.
+- Use progress tracking only as optional operational metadata.
 - All step outputs follow format: `✓ Step [N]: [status] - [metrics]`
 - **VALIDATION:** Completion requires fresh evidence, not a count of platform tool calls.

@@ -1,8 +1,8 @@
 # Specialist Handoff Patterns
 
-Use the runtime-neutral `SPAWN_AGENT(role, scope)` action from
-`runtime-actions.md`. The caller chooses the platform adapter; these patterns
-define only role, bounded scope, and expected report.
+Delegate to the named specialist when the current runtime offers delegation.
+Otherwise perform the same bounded scope sequentially and report the fallback.
+These patterns define role, bounded scope, and expected report.
 
 | Role | Bounded scope | Expected report |
 | --- | --- | --- |

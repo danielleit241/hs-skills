@@ -56,7 +56,7 @@ Read from the repository-root `.hs.json`:
 ### 3. Track Scout Work
 
 - **Skip if:** Agent count ≤ 2 (overhead exceeds benefit)
-- Use `TRACK_TASK` from `../cook/references/runtime-actions.md` only when available.
+- Record progress only when the current runtime supports it; the scoped scout report remains the source of truth.
 - Source-of-truth is the scoped scout report, not a platform task API.
 
 ### 4. Spawn Parallel Agents
@@ -68,7 +68,7 @@ Load appropriate reference based on decision tree:
 
 **Notes:**
 
-- Optionally `TRACK_TASK(in_progress)` before delegating.
+- When progress tracking is available, optionally record delegation as in progress.
 - Prompt detailed instructions for each subagent with exact directories or files it should read
 - Remember that each subagent has less than 200K tokens of context window
 - Amount of subagents to-be-spawned depends on the current system resources available and amount of files to be scanned
@@ -79,7 +79,7 @@ Load appropriate reference based on decision tree:
 **IMPORTANT:** Invoke "/hs:project-organization" skill to organize the outputs.
 
 - Timeout: 3 minutes per agent (skip non-responders)
-- Optionally `TRACK_TASK(complete)`; always log timed-out agents in the report.
+- When progress tracking is available, optionally record completion; always log timed-out agents in the report.
 - Aggregate findings into single report
 - List unresolved questions at end
 

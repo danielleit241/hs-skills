@@ -20,7 +20,7 @@ Read the plan directory:
 
 ### Step 2: Summarize the plans and document them with `/hs:journal` skill invocation
 
-Use `ASK_USER` from `../../cook/references/runtime-actions.md` to ask whether the user wants journal entries.
+Ask whether the user wants journal entries before creating them.
 Skip this step if user selects "No".
 If user selects "Yes":
 
@@ -31,8 +31,8 @@ If user selects "Yes":
 
 ### Step 3: Ask user to confirm the action before archiving these plans
 
-Use `ASK_USER` to ask whether to archive selected plans or all completed plans.
-Use `ASK_USER` to ask whether to delete permanently or move to `.hs.json` → `artifacts.plans.archiveDirectory`.
+Ask whether to archive selected plans or all completed plans.
+Ask whether to delete permanently or move to `.hs.json` → `artifacts.plans.archiveDirectory`; do not delete without explicit confirmation.
 
 ### Step 4: Archive the plans
 
@@ -43,7 +43,7 @@ Start archiving the plans based on the user's choice:
 
 ### Step 5: Ask if user wants to commit the changes
 
-Use `ASK_USER` to ask whether the user wants a commit. A commit still requires explicit authorization in the current conversation:
+Ask whether the user wants a commit. A commit still requires explicit authorization in the current conversation:
 
 - Stage and commit the changes (use the configured Git workflow)
 - Commit and push the changes (use the configured Git workflow)
