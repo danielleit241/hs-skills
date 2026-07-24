@@ -10,6 +10,9 @@ const HEAVY_DIRECTORY = /(^|[\\/\s'"`])(?:node_modules|dist|build|\.next|\.nuxt|
 const ROOT_GLOB = /(?:^|[\s'"`])\*\*\/(?:\*|\*\.[a-z0-9_-]+)(?=$|[\\/\s'"`])/i;
 const PARENT_TRAVERSAL = /(?:^|[\\/\s'"`])\.\.(?=$|[\\/])/;
 const SAFE_BASH = /^\s*(?:npm\s+(?:run\s+)?(?:build|test)|pnpm\s+(?:run\s+)?(?:build|test)|yarn\s+(?:build|test)|bun\s+(?:run\s+)?(?:build|test)|pytest\b|dotnet\s+test\b|cargo\s+test\b|go\s+test\b|make\b|docker\s+build\b)[\w\s./:=@,\-]*$/i;
+// Keys that hold file bodies rather than paths — matching guard-rail patterns inside these
+// produces false positives (e.g. a "../db/rooms.js" import line, or "node_modules" in a comment).
+const CONTENT_KEYS = new Set(['content', 'old_string', 'new_string', 'new_source', 'file_text', 'body']);
 
 function findProjectRoot(startDirectory) {
     let current = path.resolve(startDirectory || process.cwd());
@@ -42,7 +45,12 @@ function stringifyToolInput(input, depth = 0) {
     if (typeof input === 'string') return input;
     if (typeof input === 'number' || typeof input === 'boolean') return String(input);
     if (Array.isArray(input)) return input.map((value) => stringifyToolInput(value, depth + 1)).join(' ');
-    if (typeof input === 'object') return Object.values(input).map((value) => stringifyToolInput(value, depth + 1)).join(' ');
+    if (typeof input === 'object') {
+        return Object.entries(input)
+            .filter(([key]) => !CONTENT_KEYS.has(key))
+            .map(([, value]) => stringifyToolInput(value, depth + 1))
+            .join(' ');
+    }
     return '';
 }
 

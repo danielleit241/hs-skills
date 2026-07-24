@@ -55,6 +55,35 @@ test('a filename containing two dots is not mistaken for parent traversal', () =
     assert.equal(evaluateGuardrails({ tool_name: 'Read', tool_input: { path: 'src/foo..bar.ts' } }, enabled).action, 'allow');
 });
 
+test('a relative import inside written file content is not mistaken for parent traversal', () => {
+    const result = evaluateGuardrails({
+        tool_name: 'Write',
+        tool_input: { file_path: 'src/routes/rooms.ts', content: "import { db } from '../db/rooms.js';\n" },
+    }, enabled);
+    assert.equal(result.action, 'allow');
+});
+
+test('a relative import inside edited file content is not mistaken for parent traversal', () => {
+    const result = evaluateGuardrails({
+        tool_name: 'Edit',
+        tool_input: { file_path: 'src/routes/spawn.ts', old_string: 'x', new_string: "import spawn from '../claude/spawn.js';" },
+    }, enabled);
+    assert.equal(result.action, 'allow');
+});
+
+test('a node_modules mention inside written prose is not mistaken for a heavy directory path', () => {
+    const result = evaluateGuardrails({
+        tool_name: 'Edit',
+        tool_input: { file_path: 'plans/phase-02b.md', old_string: 'x', new_string: 'Remember: never commit node_modules to git.' },
+    }, enabled);
+    assert.equal(result.action, 'allow');
+});
+
+test('scout still blocks when the actual file_path targets a heavy directory or traverses the root', () => {
+    assert.equal(evaluateGuardrails({ tool_name: 'Write', tool_input: { file_path: 'node_modules/injected.js', content: 'safe text' } }, enabled).hook, 'scout');
+    assert.equal(evaluateGuardrails({ tool_name: 'Write', tool_input: { file_path: '../outside.ts', content: 'safe text' } }, enabled).hook, 'scout');
+});
+
 test('build and test commands remain allowed', () => {
     assert.equal(evaluateGuardrails({ tool_name: 'Bash', tool_input: { command: 'npm test -- node_modules/example' } }, enabled).action, 'allow');
 });
