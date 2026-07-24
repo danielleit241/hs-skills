@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 const DEFAULT_HOOKS = Object.freeze({ privacy: true, scout: true });
 const SENSITIVE_PATH = /(^|[\\/\s'"`])(?:\.env(?:\.[^\\/]+)?|\.npmrc|\.netrc|\.pypirc|\.git-credentials|auth\.json|kubeconfig|id_[a-z0-9_-]*|credentials(?:\.[a-z0-9_-]+)?|secrets?(?:\.[a-z0-9_-]+)?|[^\\/]+\.(?:pem|key|p12|pfx))(?=$|[\\/\s'"`])/i;
 const HEAVY_DIRECTORY = /(^|[\\/\s'"`])(?:node_modules|dist|build|\.next|\.nuxt|coverage|target|vendor|\.venv|venv|__pycache__|\.git)(?=$|[\\/\s'"`])/i;
-const ROOT_GLOB = /(?:^|[\\/\s'"`])\*\*\/(?:\*|\*\.[a-z0-9_-]+)(?=$|[\\/\s'"`])/i;
+const ROOT_GLOB = /(?:^|[\s'"`])\*\*\/(?:\*|\*\.[a-z0-9_-]+)(?=$|[\\/\s'"`])/i;
+const PARENT_TRAVERSAL = /(?:^|[\\/\s'"`])\.\.(?=$|[\\/])/;
 const SAFE_BASH = /^\s*(?:npm\s+(?:run\s+)?(?:build|test)|pnpm\s+(?:run\s+)?(?:build|test)|yarn\s+(?:build|test)|bun\s+(?:run\s+)?(?:build|test)|pytest\b|dotnet\s+test\b|cargo\s+test\b|go\s+test\b|make\b|docker\s+build\b)[\w\s./:=@,\-]*$/i;
 
 function findProjectRoot(startDirectory) {
@@ -64,6 +65,9 @@ export function evaluateGuardrails(event, hookConfig = readHookConfig(event?.cwd
         }
         if (ROOT_GLOB.test(toolInput)) {
             return block('scout', 'Blocked by hs-skills scout guard: narrow the repository-wide glob before reading files.');
+        }
+        if (PARENT_TRAVERSAL.test(toolInput)) {
+            return block('scout', 'Blocked by hs-skills scout guard: do not traverse above the project root.');
         }
     }
 

@@ -40,6 +40,21 @@ test('scout blocks generated paths and broad globs', () => {
     assert.equal(evaluateGuardrails({ tool_name: 'Glob', tool_input: { pattern: '**/*.ts' } }, enabled).hook, 'scout');
 });
 
+test('scout allows recursive globs scoped to a subfolder', () => {
+    assert.equal(evaluateGuardrails({ tool_name: 'Glob', tool_input: { pattern: 'src/**/*.ts' } }, enabled).action, 'allow');
+    assert.equal(evaluateGuardrails({ tool_name: 'Glob', tool_input: { pattern: 'packages/foo/**/*.tsx' } }, enabled).action, 'allow');
+});
+
+test('scout blocks traversal above the project root', () => {
+    assert.equal(evaluateGuardrails({ tool_name: 'Read', tool_input: { path: '../notes.md' } }, enabled).hook, 'scout');
+    assert.equal(evaluateGuardrails({ tool_name: 'Glob', tool_input: { pattern: '../**/*.ts' } }, enabled).hook, 'scout');
+    assert.equal(evaluateGuardrails({ tool_name: 'Read', tool_input: { path: 'src/../../outside.ts' } }, enabled).hook, 'scout');
+});
+
+test('a filename containing two dots is not mistaken for parent traversal', () => {
+    assert.equal(evaluateGuardrails({ tool_name: 'Read', tool_input: { path: 'src/foo..bar.ts' } }, enabled).action, 'allow');
+});
+
 test('build and test commands remain allowed', () => {
     assert.equal(evaluateGuardrails({ tool_name: 'Bash', tool_input: { command: 'npm test -- node_modules/example' } }, enabled).action, 'allow');
 });
