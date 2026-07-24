@@ -12,7 +12,36 @@ const PARENT_TRAVERSAL = /(?:^|[\\/\s'"`])\.\.(?=$|[\\/])/;
 const SAFE_BASH = /^\s*(?:npm\s+(?:run\s+)?(?:build|test)|pnpm\s+(?:run\s+)?(?:build|test)|yarn\s+(?:build|test)|bun\s+(?:run\s+)?(?:build|test)|pytest\b|dotnet\s+test\b|cargo\s+test\b|go\s+test\b|make\b|docker\s+build\b)[\w\s./:=@,\-]*$/i;
 // Keys that hold file bodies rather than paths — matching guard-rail patterns inside these
 // produces false positives (e.g. a "../db/rooms.js" import line, or "node_modules" in a comment).
-const CONTENT_KEYS = new Set(['content', 'old_string', 'new_string', 'new_source', 'file_text', 'body']);
+const CONTENT_KEYS = new Set([
+    'content', 'old_string', 'new_string', 'new_source', 'file_text', 'body',
+    'oldText', 'newText', 'old_text', 'new_text', 'text', 'contents',
+]);
+// Tools that never touch the filesystem — their inputs are prose (questions, previews, task
+// descriptions), not paths, so scanning them for path patterns only produces false positives.
+const NON_FILESYSTEM_TOOLS = new Set([
+    'AskUserQuestion',
+    'TodoWrite',
+    'Task',
+    'TaskCreate',
+    'TaskUpdate',
+    'TaskGet',
+    'TaskList',
+    'TaskOutput',
+    'TaskStop',
+    'EnterPlanMode',
+    'ExitPlanMode',
+    'ScheduleWakeup',
+    'SendMessage',
+    'WebFetch',
+    'WebSearch',
+]);
+// .hs.json is what privacy/scout read their on/off state from. If an agent could write it
+// unattended, it could silently disable its own guard rails — so this check is NOT configurable
+// through .hs.json (unlike privacy/scout) and always applies, regardless of hookConfig.
+const CONFIG_PATH = /(^|[\\/\s'"`])\.hs\.json(?=$|[\\/\s'"`])/i;
+const CONFIG_WRITE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
+const BASH_WRITE_INDICATOR = /(>>?|\btee\b|\bsed\s+(?:-i|--in-place)|\bSet-Content\b|\bOut-File\b|\bmv\b|\bcp\b)/i;
+const CONFIG_GUARD_REASON = 'Blocked by hs-skills config guard: .hs.json controls the guard rails themselves, so an agent may not edit it unattended — even to relax an over-eager rule. Stop and use AskUserQuestion to ask the user directly: state the specific rule that is misfiring and why, then offer concrete options (e.g. "fix the pattern in guard-rails.mjs" vs "disable this hook in .hs.json" vs "leave as-is"). Only proceed once the user has picked one.';
 
 function findProjectRoot(startDirectory) {
     let current = path.resolve(startDirectory || process.cwd());
@@ -59,9 +88,19 @@ function block(hook, reason) {
 }
 
 export function evaluateGuardrails(event, hookConfig = readHookConfig(event?.cwd)) {
-    const toolInput = stringifyToolInput(event?.tool_input ?? event);
     const toolName = event?.tool_name ?? '';
+    if (NON_FILESYSTEM_TOOLS.has(toolName)) return { action: 'allow' };
+
+    const toolInput = stringifyToolInput(event?.tool_input ?? event);
     const isSafeBash = toolName === 'Bash' && SAFE_BASH.test(toolInput);
+
+    if (CONFIG_PATH.test(toolInput)) {
+        const isDirectWrite = CONFIG_WRITE_TOOLS.has(toolName);
+        const isBashWrite = toolName === 'Bash' && BASH_WRITE_INDICATOR.test(toolInput);
+        if (isDirectWrite || isBashWrite) {
+            return block('config', CONFIG_GUARD_REASON);
+        }
+    }
 
     if (hookConfig.privacy && SENSITIVE_PATH.test(toolInput)) {
         return block('privacy', 'Blocked by hs-skills privacy guard: do not read secret files through the agent.');

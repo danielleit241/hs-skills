@@ -79,6 +79,93 @@ test('a node_modules mention inside written prose is not mistaken for a heavy di
     assert.equal(result.action, 'allow');
 });
 
+test('config guard blocks direct writes and edits to .hs.json', () => {
+    const writeResult = evaluateGuardrails({ tool_name: 'Write', tool_input: { file_path: '.hs.json', content: '{}' } }, enabled);
+    assert.equal(writeResult.hook, 'config');
+    assert.equal(writeResult.action, 'block');
+
+    const editResult = evaluateGuardrails({
+        tool_name: 'Edit',
+        tool_input: { file_path: '.hs.json', old_string: '"scout": true', new_string: '"scout": false' },
+    }, enabled);
+    assert.equal(editResult.hook, 'config');
+    assert.equal(editResult.action, 'block');
+});
+
+test('config guard blocks shell writes to .hs.json but allows reading it', () => {
+    const catResult = evaluateGuardrails({ tool_name: 'Bash', tool_input: { command: 'cat .hs.json' } }, enabled);
+    assert.equal(catResult.action, 'allow');
+
+    const redirectResult = evaluateGuardrails({ tool_name: 'Bash', tool_input: { command: "echo '{}' > .hs.json" } }, enabled);
+    assert.equal(redirectResult.hook, 'config');
+    assert.equal(redirectResult.action, 'block');
+
+    const sedResult = evaluateGuardrails({ tool_name: 'Bash', tool_input: { command: "sed -i 's/true/false/' .hs.json" } }, enabled);
+    assert.equal(sedResult.hook, 'config');
+    assert.equal(sedResult.action, 'block');
+});
+
+test('the Read tool can still inspect .hs.json without triggering the config guard', () => {
+    assert.equal(evaluateGuardrails({ tool_name: 'Read', tool_input: { file_path: '.hs.json' } }, enabled).action, 'allow');
+});
+
+test('config guard cannot be turned off through .hs.json itself, unlike privacy and scout', () => {
+    const disabled = { privacy: false, scout: false };
+    const result = evaluateGuardrails({ tool_name: 'Write', tool_input: { file_path: '.hs.json', content: '{}' } }, disabled);
+    assert.equal(result.hook, 'config');
+    assert.equal(result.action, 'block');
+});
+
+test('AskUserQuestion is never scanned even when option previews mention paths', () => {
+    const result = evaluateGuardrails({
+        tool_name: 'AskUserQuestion',
+        tool_input: {
+            questions: [{
+                question: 'Which import style?',
+                header: 'Import',
+                multiSelect: false,
+                options: [{ label: 'Relative', description: 'use ../db/rooms.js', preview: "import { db } from '../db/rooms.js'" }],
+            }],
+        },
+    }, enabled);
+    assert.equal(result.action, 'allow');
+});
+
+test('TodoWrite and other non-filesystem tools bypass the guard rails entirely', () => {
+    assert.equal(evaluateGuardrails({ tool_name: 'TodoWrite', tool_input: { todos: [{ content: 'clean node_modules', status: 'pending' }] } }, enabled).action, 'allow');
+    assert.equal(evaluateGuardrails({ tool_name: 'Task', tool_input: { prompt: 'read ../secrets.env and summarize' } }, enabled).action, 'allow');
+});
+
+test('WebFetch and WebSearch bypass the guard rails since they never touch the filesystem', () => {
+    assert.equal(evaluateGuardrails({ tool_name: 'WebSearch', tool_input: { query: 'difference between ../a and ./a imports' } }, enabled).action, 'allow');
+    assert.equal(evaluateGuardrails({ tool_name: 'WebFetch', tool_input: { url: 'https://example.com/docs/x/../y', prompt: 'summarize node_modules setup' } }, enabled).action, 'allow');
+});
+
+test('MCP edit tools using oldText/newText/text do not leak file bodies into the scan', () => {
+    const result = evaluateGuardrails({
+        tool_name: 'mcp__filesystem__edit_file',
+        tool_input: { path: 'src/routes/rooms.ts', edits: [{ oldText: 'x', newText: "import { db } from '../db/rooms.js';" }] },
+    }, enabled);
+    assert.equal(result.action, 'allow');
+});
+
+test('privacy allows a secret-looking string inside written content, since only the destination path is checked', () => {
+    const result = evaluateGuardrails({
+        tool_name: 'Write',
+        tool_input: { file_path: 'src/config.ts', content: 'const key = "AWS_SECRET id_rsa";' },
+    }, enabled);
+    assert.equal(result.action, 'allow');
+});
+
+test('privacy still blocks when the destination path itself is a secret file, even with benign content', () => {
+    const result = evaluateGuardrails({
+        tool_name: 'Write',
+        tool_input: { file_path: '.env', content: 'harmless text' },
+    }, enabled);
+    assert.equal(result.hook, 'privacy');
+    assert.equal(result.action, 'block');
+});
+
 test('scout still blocks when the actual file_path targets a heavy directory or traverses the root', () => {
     assert.equal(evaluateGuardrails({ tool_name: 'Write', tool_input: { file_path: 'node_modules/injected.js', content: 'safe text' } }, enabled).hook, 'scout');
     assert.equal(evaluateGuardrails({ tool_name: 'Write', tool_input: { file_path: '../outside.ts', content: 'safe text' } }, enabled).hook, 'scout');
